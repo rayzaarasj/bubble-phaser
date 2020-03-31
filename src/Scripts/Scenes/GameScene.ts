@@ -11,6 +11,7 @@ export class GameScene extends Phaser.Scene {
   bubbles: Phaser.Physics.Arcade.Group;
   bubblesArray: Array<Array<Bubble>>;
   activeBubble: Bubble;
+  clickArea: Phaser.GameObjects.Rectangle;
 
   constructor() {
     super({
@@ -36,11 +37,28 @@ export class GameScene extends Phaser.Scene {
   }
 
   create(): void {
+    this.clickArea = this.add.rectangle(600, 1100, 1200, 200, 0x5b5b5b);
+    this.add.rectangle(600, 50, 1200, 100, 0x5b5b5b);
+
     this.initTiles();
     this.activeBubble = new Bubble(
-      { scene: this, x: 350, y: 1000 },
+      { scene: this, x: 360, y: 1000 },
       this.colors
     );
+
+    this.clickArea.setInteractive().on("pointerdown", event => {
+      var bubbleV = new Phaser.Math.Vector2(
+        this.activeBubble.x,
+        this.activeBubble.y
+      );
+      var eventV = new Phaser.Math.Vector2(event.x, event.y);
+      var direction = bubbleV.subtract(eventV);
+      this.physics.velocityFromAngle(
+        direction.angle() * Phaser.Math.RAD_TO_DEG,
+        750,
+        this.activeBubble.body.velocity
+      );
+    });
   }
 
   private getTileCoordinate(column: integer, row: integer): Coord {
