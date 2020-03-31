@@ -5,10 +5,12 @@ export class GameScene extends Phaser.Scene {
   colors: Object;
   columns: integer;
   startRow: integer;
+  maxRow: integer;
   tileWidth: integer;
   tileHeight: integer;
   bubbles: Phaser.Physics.Arcade.Group;
   bubblesArray: Array<Array<Bubble>>;
+  activeBubble: Bubble;
 
   constructor() {
     super({
@@ -28,11 +30,31 @@ export class GameScene extends Phaser.Scene {
     };
     this.columns = 8;
     this.startRow = 5;
+    this.maxRow = 10;
     this.tileWidth = 90;
     this.tileHeight = 80;
   }
 
   create(): void {
+    this.initTiles();
+    this.activeBubble = new Bubble(
+      { scene: this, x: 350, y: 1000 },
+      this.colors
+    );
+  }
+
+  private getTileCoordinate(column: integer, row: integer): Coord {
+    var tilex = column * this.tileWidth;
+
+    if (row % 2) {
+      tilex += this.tileWidth / 2;
+    }
+
+    var tiley = row * this.tileHeight;
+    return new Coord(tilex, tiley);
+  }
+
+  private initTiles() {
     this.bubbles = this.physics.add.group();
     this.bubblesArray = new Array();
 
@@ -46,44 +68,19 @@ export class GameScene extends Phaser.Scene {
         var coord = this.getTileCoordinate(i, j);
         var bubble = new Bubble(
           { scene: this, x: 45 + coord.x, y: 150 + coord.y },
-          this.colors,
-          true
+          this.colors
         );
         this.bubblesArray[j].push(bubble);
         this.bubbles.add(bubble);
       }
     }
-    console.log(this.bubblesArray);
-    // for (var i = 0; i < 8; i++) {
-    //   // this.add.existing(bubble);
-    //   var bubble = new Bubble(
-    //     { scene: this, x: 45 + i * 100, y: 44 },
-    //     this.colors,
-    //     true
-    //   );
-    //   bubble.setCollideWorldBounds(true);
-    //   this.physics.add.existing(bubble);
-    //   this.balls.add(bubble);
-    //   // this.physics.add.sprite(0,0,"bubble").setPosition(45+(i*90),45).setCircle(60, 28, 28).setScale(0.75,0.75);
-    // }
-
-    // this.physics.add.collider(this.balls, undefined, function(
-    //   ball1: any,
-    //   ball2
-    // ) {
-    //   console.log("asdasd");
-    // });
-  }
-
-  private getTileCoordinate(column: integer, row: integer): Coord {
-    var tilex = column * this.tileWidth;
-
-    if (row % 2) {
-      tilex += this.tileWidth / 2;
+    for (var i = this.startRow; i < this.maxRow; i++) {
+      this.bubblesArray.push(new Array());
+      for (var j = 0; j < this.columns; j++) {
+        this.bubblesArray[i].push(null);
+      }
     }
-
-    var tiley = row * this.tileHeight;
-    return new Coord(tilex, tiley);
+    console.log(this.bubblesArray);
   }
 }
 
