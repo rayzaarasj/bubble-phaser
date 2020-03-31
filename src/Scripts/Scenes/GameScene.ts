@@ -9,6 +9,7 @@ export class GameScene extends Phaser.Scene {
   tileWidth: integer;
   tileHeight: integer;
   scoreHeight: integer;
+  bubbleSpeed: integer;
   bubbles: Phaser.Physics.Arcade.Group;
   bubblesArray: Array<Array<Bubble>>;
   activeBubble: Bubble;
@@ -38,6 +39,7 @@ export class GameScene extends Phaser.Scene {
     this.tileWidth = 90;
     this.tileHeight = 80;
     this.scoreHeight = 100;
+    this.bubbleSpeed = 1000;
   }
 
   create(): void {
@@ -49,7 +51,7 @@ export class GameScene extends Phaser.Scene {
     this.initTiles();
     this.setupNewBubble();
 
-    this.clickArea.setInteractive().on("pointerdown", event => {
+    this.clickArea.setInteractive().on("pointerdown", (event: any) => {
       var bubbleV = new Phaser.Math.Vector2(
         this.activeBubble.x,
         this.activeBubble.y
@@ -58,37 +60,16 @@ export class GameScene extends Phaser.Scene {
       var direction = bubbleV.subtract(eventV);
       this.physics.velocityFromAngle(
         direction.angle() * Phaser.Math.RAD_TO_DEG,
-        750,
+        this.bubbleSpeed,
         this.activeBubble.body.velocity
       );
     });
   }
 
-  update(delta: any): void {
-    // console.log({ x: this.activeBubble.x, y: this.activeBubble.y });
-  }
-
-  private getTileCoordinate(column: integer, row: integer): Point {
-    var tilex = column * this.tileWidth;
-
-    if (row % 2) {
-      tilex += this.tileWidth / 2;
+  update(time: any): void {
+    if (this.activeBubble == null) {
+      this.setupNewBubble();
     }
-
-    var tiley = row * this.tileHeight + this.scoreHeight;
-    return new Point(tilex, tiley);
-  }
-
-  private getGridPosition(x: integer, y: integer): Point {
-    var gridy = Math.floor((y - this.scoreHeight) / this.tileHeight);
-
-    var xoffset = 0;
-    if (gridy % 2) {
-      xoffset = this.tileWidth / 2;
-    }
-    var gridx = Math.floor((x - xoffset) / this.tileWidth);
-
-    return new Point(gridx, gridy);
   }
 
   private snapBubble() {
@@ -97,11 +78,14 @@ export class GameScene extends Phaser.Scene {
     this.activeBubble.setVelocity(0, 0);
     this.bubbles.add(this.activeBubble);
     this.bubblesArray[index.y][index.x] = this.activeBubble;
+    // Workaroud. If not delayed this.activeBubble.setPosition(45 + coord.x, 45 + coord.y) doesn't work properly
     this.time.addEvent({
       delay: 1,
       callback: () => {
-        this.activeBubble.setPosition(45 + coord.x, 45 + coord.y);
-        this.setupNewBubble();
+        if (this.activeBubble != null) {
+          this.activeBubble.setPosition(45 + coord.x, 45 + coord.y);
+          this.activeBubble = null;
+        }
       },
       callbackScope: this
     });
@@ -113,12 +97,12 @@ export class GameScene extends Phaser.Scene {
       this.colors
     );
 
-    this.bubbleToCluster = this.physics.add.overlap(
+    this.bubbleToCluster = this.physics.add.collider(
       this.activeBubble,
       this.bubbles,
       () => {
-        this.snapBubble();
         this.physics.world.removeCollider(this.bubbleToCluster);
+        this.snapBubble();
         this.popSound.play();
       },
       null,
@@ -126,8 +110,27 @@ export class GameScene extends Phaser.Scene {
     );
   }
 
+  private getTileCoordinate(column: integer, row: integer): Point {
+    var tilex = column * this.tileWidth;
+    if (row % 2) {
+      tilex += this.tileWidth / 2;
+    }
+    var tiley = row * this.tileHeight + this.scoreHeight;
+    return new Point(tilex, tiley);
+  }
+
+  private getGridPosition(x: integer, y: integer): Point {
+    var gridy = Math.floor((y - this.scoreHeight) / this.tileHeight);
+    var xoffset = 0;
+    if (gridy % 2) {
+      xoffset = this.tileWidth / 2;
+    }
+    var gridx = Math.floor((x - xoffset) / this.tileWidth);
+    return new Point(gridx, gridy);
+  }
+
   private initTiles(): void {
-    this.bubbles = this.physics.add.group();
+    this.bubbles = this.physics.add.group({ immovable: true });
     this.bubblesArray = new Array();
 
     for (var j = 0; j < this.startRow; j++) {
