@@ -39,4 +39,17 @@ export class Bubble extends Phaser.Physics.Arcade.Sprite {
       callbackScope: this
     });
   }
+
+  fall() {
+    this.scene.sound.play("pop");
+    this.play("pop");
+    this.setVelocityY(500);
+    this.scene.time.addEvent({
+      delay: 200,
+      callback: () => {
+        this.destroy();
+      },
+      callbackScope: this
+    });
+  }
 }
