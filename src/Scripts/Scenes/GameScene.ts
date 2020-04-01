@@ -17,6 +17,7 @@ export class GameScene extends Phaser.Scene {
   bubbleToCluster: Phaser.Physics.Arcade.Collider;
   popSound: Phaser.Sound.BaseSound;
   neighBorOffsets: integer[][][];
+  popTimer: Phaser.Time.TimerEvent;
 
   constructor() {
     super({
@@ -97,14 +98,14 @@ export class GameScene extends Phaser.Scene {
     ty: integer,
     matchColor: boolean,
     reset: boolean
-    // skipProscessed: boolean
-  ): void {
+  ): Bubble[] {
     if (reset) {
       this.resetProcessed();
     }
 
-    var targetTile = this.bubblesArray[tx][ty];
+    var targetTile = this.bubblesArray[ty][tx];
     var queue = [targetTile];
+    targetTile.processed = true;
     var foundCluster = [];
 
     while (queue.length > 0) {
@@ -118,8 +119,16 @@ export class GameScene extends Phaser.Scene {
         foundCluster.push(currentTile);
 
         var neighbors = this.getNeighbors(currentTile);
+        for (var i = 0; i < neighbors.length; i++) {
+          if (!neighbors[i].processed) {
+            queue.push(neighbors[i]);
+            neighbors[i].processed = true;
+          }
+        }
       }
     }
+
+    return foundCluster;
   }
 
   private getNeighbors(currentTile: Bubble): Bubble[] {
@@ -145,9 +154,11 @@ export class GameScene extends Phaser.Scene {
   }
 
   private resetProcessed() {
-    for (var i = 0; i < this.columns; i++) {
-      for (var j = 0; j < this.maxRow; j++) {
-        this.bubblesArray[i][j].processed = false;
+    for (var j = 0; j < this.maxRow; j++) {
+      for (var i = 0; i < this.columns; i++) {
+        if (this.bubblesArray[j][i] != null) {
+          this.bubblesArray[j][i].processed = false;
+        }
       }
     }
   }
@@ -164,10 +175,34 @@ export class GameScene extends Phaser.Scene {
       callback: () => {
         if (this.activeBubble != null) {
           this.activeBubble.setPosition(45 + coord.x, 45 + coord.y);
+          this.popCluster(this.findCluster(index.x, index.y, true, true));
           this.activeBubble = null;
         }
       },
       callbackScope: this
+    });
+  }
+
+  private popCluster(cluster: Bubble[]): void {
+    if (cluster.length < 3) {
+      return;
+    }
+
+    cluster.reverse();
+    this.popTimer = this.time.addEvent({
+      delay: 100,
+      callback: () => {
+        if (cluster.length <= 0) {
+          this.popTimer.destroy();
+          return;
+        }
+        var bubble = cluster.pop();
+        var index = this.getGridPosition(bubble.x, bubble.y);
+        this.bubblesArray[index.y][index.x] = null;
+        bubble.pop();
+      },
+      callbackScope: this,
+      repeat: -1
     });
   }
 
