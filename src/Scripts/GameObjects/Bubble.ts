@@ -2,6 +2,7 @@ import "phaser";
 
 export class Bubble extends Phaser.Physics.Arcade.Sprite {
   color: integer;
+  processed: boolean = false;
 
   constructor(config: any, colors: object) {
     super(config.scene, 0, 0, "bubble");

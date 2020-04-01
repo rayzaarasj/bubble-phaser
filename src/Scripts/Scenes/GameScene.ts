@@ -16,6 +16,7 @@ export class GameScene extends Phaser.Scene {
   clickArea: Phaser.GameObjects.Rectangle;
   bubbleToCluster: Phaser.Physics.Arcade.Collider;
   popSound: Phaser.Sound.BaseSound;
+  neighBorOffsets: integer[][][];
 
   constructor() {
     super({
@@ -40,6 +41,25 @@ export class GameScene extends Phaser.Scene {
     this.tileHeight = 80;
     this.scoreHeight = 100;
     this.bubbleSpeed = 1000;
+
+    this.neighBorOffsets = [
+      [
+        [1, 0],
+        [0, 1],
+        [-1, 1],
+        [-1, 0],
+        [-1, -1],
+        [0, -1]
+      ], // even
+      [
+        [1, 0],
+        [1, 1],
+        [0, 1],
+        [-1, 0],
+        [0, -1],
+        [1, -1]
+      ] // odd
+    ];
   }
 
   create(): void {
@@ -69,6 +89,66 @@ export class GameScene extends Phaser.Scene {
   update(time: any): void {
     if (this.activeBubble == null) {
       this.setupNewBubble();
+    }
+  }
+
+  private findCluster(
+    tx: integer,
+    ty: integer,
+    matchColor: boolean,
+    reset: boolean
+    // skipProscessed: boolean
+  ): void {
+    if (reset) {
+      this.resetProcessed();
+    }
+
+    var targetTile = this.bubblesArray[tx][ty];
+    var queue = [targetTile];
+    var foundCluster = [];
+
+    while (queue.length > 0) {
+      var currentTile = queue.pop();
+
+      if (currentTile == null) {
+        continue;
+      }
+
+      if (!matchColor || currentTile.color == targetTile.color) {
+        foundCluster.push(currentTile);
+
+        var neighbors = this.getNeighbors(currentTile);
+      }
+    }
+  }
+
+  private getNeighbors(currentTile: Bubble): Bubble[] {
+    var indexCurrent = this.getGridPosition(currentTile.x, currentTile.y);
+    var offset = this.neighBorOffsets[indexCurrent.y % 2];
+    var neighbors = [];
+
+    for (var i = 0; i < offset.length; i++) {
+      var nx = indexCurrent.x + offset[i][0];
+      var ny = indexCurrent.y + offset[i][1];
+
+      if (
+        nx >= 0 &&
+        ny >= 0 &&
+        nx < this.columns &&
+        ny < this.maxRow &&
+        this.bubblesArray[ny][nx] != null
+      ) {
+        neighbors.push(this.bubblesArray[ny][nx]);
+      }
+    }
+    return neighbors;
+  }
+
+  private resetProcessed() {
+    for (var i = 0; i < this.columns; i++) {
+      for (var j = 0; j < this.maxRow; j++) {
+        this.bubblesArray[i][j].processed = false;
+      }
     }
   }
 
