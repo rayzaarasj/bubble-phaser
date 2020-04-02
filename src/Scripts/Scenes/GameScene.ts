@@ -21,6 +21,7 @@ export class GameScene extends Phaser.Scene {
   popTimer: Phaser.Time.TimerEvent;
   fallTimer: Phaser.Time.TimerEvent;
   scoreText: Phaser.GameObjects.Text;
+  scoreArea: Phaser.GameObjects.Rectangle;
 
   constructor() {
     super({
@@ -71,9 +72,10 @@ export class GameScene extends Phaser.Scene {
     this.popSound = this.sound.add("pop");
 
     this.clickArea = this.add.rectangle(600, 1100, 1200, 200, 0x5b5b5b);
-    this.add.rectangle(600, 50, 1200, this.scoreHeight, 0x5b5b5b);
-
     this.initTiles();
+    this.bubbles.add(
+      this.add.rectangle(600, 50, 1200, this.scoreHeight, 0x5b5b5b)
+    );
     this.setupNewBubble();
 
     this.clickArea.setInteractive().on("pointerdown", (event: any) => {
