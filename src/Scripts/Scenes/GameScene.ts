@@ -1,5 +1,6 @@
 import "phaser";
 import { Bubble } from "../GameObjects/Bubble";
+import { GameOverPanel } from "../GameObjects/GameOverPanel";
 
 export class GameScene extends Phaser.Scene {
   colors: Object;
@@ -79,6 +80,9 @@ export class GameScene extends Phaser.Scene {
     this.setupNewBubble();
 
     this.clickArea.setInteractive().on("pointerdown", (event: any) => {
+      if (this.activeBubble == null) {
+        return;
+      }
       var bubbleV = new Phaser.Math.Vector2(
         this.activeBubble.x,
         this.activeBubble.y
@@ -220,6 +224,12 @@ export class GameScene extends Phaser.Scene {
     var index = this.getGridPosition(this.activeBubble.x, this.activeBubble.y);
     var coord = this.getTileCoordinate(index.x, index.y);
     this.activeBubble.setVelocity(0, 0);
+
+    if (index.y >= this.maxRow) {
+      this.gameOver();
+      return;
+    }
+
     this.bubbles.add(this.activeBubble);
     this.bubblesArray[index.y][index.x] = this.activeBubble;
     // Workaroud. If not delayed this.activeBubble.setPosition(45 + coord.x, 45 + coord.y) doesn't work properly
@@ -234,6 +244,11 @@ export class GameScene extends Phaser.Scene {
       },
       callbackScope: this
     });
+  }
+
+  gameOver() {
+    this.clickArea.removeInteractive();
+    new GameOverPanel({ scene: this, x: 360, y: 600 });
   }
 
   private fallClusters(clusters: Bubble[][]): void {

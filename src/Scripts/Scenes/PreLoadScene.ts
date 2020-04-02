@@ -13,6 +13,8 @@ export class PreLoadScene extends Phaser.Scene {
       frameHeight: 180
     });
     this.load.audio("pop", "src/Assets/Audio/Blop.mp3");
+    this.load.image("panel", "src/Assets/Panel.png");
+    this.load.image("replay", "src/Assets/Replay.png");
   }
 
   create(): void {
