@@ -10,6 +10,7 @@ export class GameScene extends Phaser.Scene {
   tileHeight: integer;
   scoreHeight: integer;
   bubbleSpeed: integer;
+  score: integer;
   bubbles: Phaser.Physics.Arcade.Group;
   bubblesArray: Array<Array<Bubble>>;
   activeBubble: Bubble;
@@ -19,6 +20,7 @@ export class GameScene extends Phaser.Scene {
   neighBorOffsets: integer[][][];
   popTimer: Phaser.Time.TimerEvent;
   fallTimer: Phaser.Time.TimerEvent;
+  scoreText: Phaser.GameObjects.Text;
 
   constructor() {
     super({
@@ -43,6 +45,7 @@ export class GameScene extends Phaser.Scene {
     this.tileHeight = 80;
     this.scoreHeight = 100;
     this.bubbleSpeed = 800;
+    this.score = 0;
 
     this.neighBorOffsets = [
       [
@@ -86,9 +89,19 @@ export class GameScene extends Phaser.Scene {
         this.activeBubble.body.velocity
       );
     });
+
+    this.scoreText = this.add
+      .text(360, 50, "" + this.score, {
+        fontFamily: "Roboto Condensed",
+        color: "#fff",
+        fontSize: "64px"
+      })
+      .setOrigin(0.5);
   }
 
   update(time: any): void {
+    this.scoreText.setText("" + this.score).setX(360);
+
     if (
       this.activeBubble == null &&
       this.popTimer == null &&

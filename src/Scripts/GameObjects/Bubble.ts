@@ -1,4 +1,5 @@
 import "phaser";
+import { GameScene } from "../Scenes/GameScene";
 
 export class Bubble extends Phaser.Physics.Arcade.Sprite {
   color: integer;
@@ -30,6 +31,7 @@ export class Bubble extends Phaser.Physics.Arcade.Sprite {
   pop() {
     this.scene.sound.play("pop");
     this.play("pop");
+    (this.scene as GameScene).score += 10;
     this.scene.time.addEvent({
       delay: 100,
       callback: () => {
@@ -43,6 +45,7 @@ export class Bubble extends Phaser.Physics.Arcade.Sprite {
     this.scene.sound.play("pop");
     this.play("pop");
     this.setVelocityY(500);
+    (this.scene as GameScene).score += 20;
     this.scene.time.addEvent({
       delay: 200,
       callback: () => {
