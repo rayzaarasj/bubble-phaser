@@ -42,7 +42,7 @@ export class GameScene extends Phaser.Scene {
     this.tileWidth = 90;
     this.tileHeight = 80;
     this.scoreHeight = 100;
-    this.bubbleSpeed = 1000;
+    this.bubbleSpeed = 800;
 
     this.neighBorOffsets = [
       [
@@ -74,8 +74,6 @@ export class GameScene extends Phaser.Scene {
     this.setupNewBubble();
 
     this.clickArea.setInteractive().on("pointerdown", (event: any) => {
-      // event.x = 294.3704109666753;
-      // event.y = 1089.6803216112658;
       var bubbleV = new Phaser.Math.Vector2(
         this.activeBubble.x,
         this.activeBubble.y
@@ -91,7 +89,11 @@ export class GameScene extends Phaser.Scene {
   }
 
   update(time: any): void {
-    if (this.activeBubble == null) {
+    if (
+      this.activeBubble == null &&
+      this.popTimer == null &&
+      this.fallTimer == null
+    ) {
       this.setupNewBubble();
     }
   }
@@ -202,7 +204,6 @@ export class GameScene extends Phaser.Scene {
   private snapBubble() {
     var index = this.getGridPosition(this.activeBubble.x, this.activeBubble.y);
     var coord = this.getTileCoordinate(index.x, index.y);
-    console.log({ index: index, coord: coord });
     this.activeBubble.setVelocity(0, 0);
     this.bubbles.add(this.activeBubble);
     this.bubblesArray[index.y][index.x] = this.activeBubble;
@@ -211,7 +212,6 @@ export class GameScene extends Phaser.Scene {
       delay: 1,
       callback: () => {
         if (this.activeBubble != null) {
-          console.log({ debug: "ASDA", coord: coord });
           this.activeBubble.setPosition(45 + coord.x, 45 + coord.y);
           this.popCluster(this.findCluster(index.x, index.y, true, true));
           this.activeBubble = null;
@@ -222,7 +222,6 @@ export class GameScene extends Phaser.Scene {
   }
 
   private fallClusters(clusters: Bubble[][]): void {
-    console.log(clusters);
     var finalCluster = [];
     clusters.forEach(cluster => {
       cluster.forEach(tile => {
@@ -230,18 +229,17 @@ export class GameScene extends Phaser.Scene {
       });
     });
 
-    console.log(finalCluster);
     this.fallTimer = this.time.addEvent({
       delay: 100,
       callback: () => {
         if (finalCluster.length <= 0) {
           this.fallTimer.destroy();
+          this.fallTimer = null;
           return;
         }
 
         var bubble = finalCluster.pop();
         var index = this.getGridPosition(bubble.x, bubble.y);
-        console.log(index);
         this.bubblesArray[index.y][index.x] = null;
         bubble.fall();
       },
@@ -261,6 +259,7 @@ export class GameScene extends Phaser.Scene {
       callback: () => {
         if (cluster.length <= 0) {
           this.popTimer.destroy();
+          this.popTimer = null;
           this.fallClusters(this.findFloatingClusters());
           return;
         }
@@ -308,17 +307,7 @@ export class GameScene extends Phaser.Scene {
     if (gridy % 2) {
       xoffset = this.tileWidth / 2;
     }
-    // console.log({
-    //   x: x,
-    //   offset: xoffset,
-    //   tileWidth: this.tileWidth,
-    //   hasilX: (x - xoffset) / this.tileWidth
-    // });
-    // console.log({ y: y, hasilY: (y - this.scoreHeight) / this.tileHeight });
     var gridx = Math.floor((x - xoffset) / this.tileWidth);
-    // if (xoffset && gridx == this.columns - 1) {
-    //   gridx -= 1;
-    // }
     return new Point(gridx, gridy);
   }
 

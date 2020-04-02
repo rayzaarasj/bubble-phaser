@@ -1,5 +1,4 @@
 import "phaser";
-import { GameScene } from "../Scenes/GameScene";
 
 export class Bubble extends Phaser.Physics.Arcade.Sprite {
   color: integer;
