@@ -12,6 +12,7 @@ export class GameScene extends Phaser.Scene {
   scoreHeight: integer;
   bubbleSpeed: integer;
   score: integer;
+  dragging: boolean;
   bubbles: Phaser.Physics.Arcade.Group;
   bubblesArray: Array<Array<Bubble>>;
   activeBubble: Bubble;
@@ -23,6 +24,7 @@ export class GameScene extends Phaser.Scene {
   fallTimer: Phaser.Time.TimerEvent;
   scoreText: Phaser.GameObjects.Text;
   scoreArea: Phaser.GameObjects.Rectangle;
+  arrow: Phaser.GameObjects.Image;
 
   constructor() {
     super({
@@ -83,6 +85,25 @@ export class GameScene extends Phaser.Scene {
       if (this.activeBubble == null) {
         return;
       }
+
+      this.dragging = true;
+      this.arrow = this.add
+        .image(this.activeBubble.x, this.activeBubble.y, "arrow")
+        .setTint(0xff0000);
+      this.arrow.setRotation(this.getAngleEventToActiveBubble(event));
+    });
+
+    this.clickArea.on("pointermove", (event: any) => {
+      if (this.dragging) {
+        this.arrow.setRotation(this.getAngleEventToActiveBubble(event));
+      }
+    });
+
+    this.clickArea.on("pointerup", (event: any) => {
+      if (!this.dragging) {
+        return;
+      }
+
       var bubbleV = new Phaser.Math.Vector2(
         this.activeBubble.x,
         this.activeBubble.y
@@ -95,7 +116,6 @@ export class GameScene extends Phaser.Scene {
         this.activeBubble.body.velocity
       );
     });
-
     this.scoreText = this.add
       .text(360, 50, "" + this.score, {
         fontFamily: "Roboto Condensed",
@@ -103,6 +123,18 @@ export class GameScene extends Phaser.Scene {
         fontSize: "64px"
       })
       .setOrigin(0.5);
+  }
+
+  private getAngleEventToActiveBubble(event: any): number {
+    return (
+      Phaser.Math.Angle.Between(
+        event.x,
+        event.y,
+        this.activeBubble.x,
+        this.activeBubble.y
+      ) +
+      90 * Phaser.Math.DEG_TO_RAD
+    );
   }
 
   update(time: any): void {

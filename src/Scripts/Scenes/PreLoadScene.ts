@@ -15,6 +15,7 @@ export class PreLoadScene extends Phaser.Scene {
     this.load.audio("pop", "src/Assets/Audio/Blop.mp3");
     this.load.image("panel", "src/Assets/Panel.png");
     this.load.image("replay", "src/Assets/Replay.png");
+    this.load.image("arrow", "src/Assets/arrow.png");
   }
 
   create(): void {
