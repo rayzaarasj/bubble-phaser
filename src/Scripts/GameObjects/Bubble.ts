@@ -4,6 +4,7 @@ import { GameScene } from "../Scenes/GameScene";
 export class Bubble extends Phaser.Physics.Arcade.Sprite {
   color: integer;
   processed: boolean;
+  circle: Phaser.Geom.Circle;
 
   constructor(config: any, colors: object) {
     super(config.scene, 0, 0, "bubble");
@@ -26,6 +27,16 @@ export class Bubble extends Phaser.Physics.Arcade.Sprite {
       frames: this.scene.anims.generateFrameNumbers("bubble", {}),
       repeat: 0
     });
+
+    this.circle = new Phaser.Geom.Circle(this.x, this.y, 45);
+
+    this.scene.events.on("update", (time: any, delta: any) => {
+      this.update(time, delta);
+    });
+  }
+
+  update(time: any, delta: any) {
+    this.circle.setPosition(this.x, this.y);
   }
 
   pop() {

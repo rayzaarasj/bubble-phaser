@@ -29,6 +29,10 @@ export class GameScene extends Phaser.Scene {
   solidLine: Phaser.Geom.Line;
   dotLine: Phaser.Geom.Line;
   dotLineReflected: Phaser.Geom.Line;
+  wallLineLeft: Phaser.Geom.Line;
+  wallLineRight: Phaser.Geom.Line;
+  points: Phaser.Geom.Point[];
+  maxReflection: number;
 
   constructor() {
     super({
@@ -54,6 +58,8 @@ export class GameScene extends Phaser.Scene {
     this.scoreHeight = 100;
     this.bubbleSpeed = 800;
     this.score = 0;
+    this.maxReflection = 3;
+    this.points = new Array<Phaser.Geom.Point>();
 
     this.neighBorOffsets = [
       [
@@ -134,14 +140,18 @@ export class GameScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     this.graphics = this.add.graphics({
-      lineStyle: { width: 8, color: 0xff0000 }
+      lineStyle: { width: 8, color: 0xff0000 },
+      fillStyle: { color: 0xff0000 }
     });
+
+    this.wallLineLeft = new Phaser.Geom.Line(0, 0, 0, 1200);
+    this.wallLineRight = new Phaser.Geom.Line(720, 0, 720, 1200);
     this.solidLine = new Phaser.Geom.Line(0, 0, 0, 0);
     this.dotLine = new Phaser.Geom.Line(0, 0, 0, 0);
     this.dotLineReflected = new Phaser.Geom.Line(0, 0, 0, 0);
   }
 
-  updateGuideLine(event: any) {
+  private updateGuideLine(event: any) {
     this.solidLine.setTo(
       this.activeBubble.x,
       this.activeBubble.y,
@@ -149,8 +159,117 @@ export class GameScene extends Phaser.Scene {
       event.y
     );
 
+    this.dottedGuideLine(
+      this.activeBubble.x,
+      this.activeBubble.y,
+      this.getAngleEventToActiveBubble(event) - 90 * Phaser.Math.DEG_TO_RAD,
+      0
+    );
+
     this.graphics.clear();
     this.graphics.strokeLineShape(this.solidLine);
+    this.points.forEach(point => {
+      this.graphics.fillPoint(point.x, point.y, 10);
+    });
+    this.points = new Array();
+  }
+
+  private dottedGuideLine(x: number, y: number, angle: number, n: number) {
+    if (n > this.maxReflection) {
+      return;
+    }
+    Phaser.Geom.Line.SetToAngle(this.dotLine, x, y, angle, 100000);
+
+    var wallIntersectResult = this.getClosestIntersectWall();
+    var wallIntersect = wallIntersectResult.intersection;
+    var bubbleIntersect = this.getClosestIntersectBubble();
+
+    var length = Math.min(wallIntersect.length, bubbleIntersect.length);
+
+    Phaser.Geom.Line.SetToAngle(this.dotLine, x, y, angle, length);
+    this.drawDottedLine();
+
+    if (wallIntersect.length < bubbleIntersect.length) {
+      this.dottedGuideLine(
+        wallIntersect.x,
+        wallIntersect.y,
+        Phaser.Geom.Line.ReflectAngle(
+          this.dotLine,
+          wallIntersectResult.wallSide
+        ),
+        n + 1
+      );
+    }
+  }
+
+  private getClosestIntersectBubble() {
+    var point = new Phaser.Geom.Point();
+    var points = new Array();
+    var length = Number.MAX_VALUE;
+    for (var i = 0; i < this.columns; i++) {
+      for (var j = 0; j < this.maxRow; j++) {
+        var bubble = this.bubblesArray[j][i];
+        if (
+          bubble != null &&
+          Phaser.Geom.Intersects.GetLineToCircle(
+            this.dotLine,
+            bubble.circle,
+            points
+          )
+        ) {
+          points.forEach(temp => {
+            var tempLength = Phaser.Math.Distance.Between(
+              this.dotLine.x1,
+              this.dotLine.y1,
+              temp.x,
+              temp.y
+            );
+
+            if (tempLength < length) {
+              point = temp;
+              length = tempLength;
+            }
+          });
+        }
+      }
+    }
+    return new Intersection(point.x, point.y, length);
+  }
+
+  private drawDottedLine() {
+    var points = new Array<Phaser.Geom.Point>();
+    Phaser.Geom.Line.GetPoints(this.dotLine, 0, 25, points);
+    this.points = this.points.concat(points);
+  }
+
+  private getClosestIntersectWall() {
+    var point = new Phaser.Geom.Point();
+    var wallSide = null;
+
+    if (
+      Phaser.Geom.Intersects.LineToLine(this.dotLine, this.wallLineLeft, point)
+    ) {
+      wallSide = this.wallLineLeft;
+      point.x = 1;
+    } else if (
+      Phaser.Geom.Intersects.LineToLine(this.dotLine, this.wallLineRight, point)
+    ) {
+      wallSide = this.wallLineRight;
+      point.x = 719;
+    }
+    return {
+      intersection: new Intersection(
+        point.x,
+        point.y,
+        Phaser.Math.Distance.Between(
+          this.dotLine.x1,
+          this.dotLine.y1,
+          point.x,
+          point.y
+        )
+      ),
+      wallSide: wallSide
+    };
   }
 
   private getAngleEventToActiveBubble(event: any): number {
@@ -437,5 +556,17 @@ class Point {
   constructor(x: integer, y: integer) {
     this.x = x;
     this.y = y;
+  }
+}
+
+class Intersection {
+  x: integer;
+  y: integer;
+  length: integer;
+
+  constructor(x: integer, y: integer, length: integer) {
+    this.x = x;
+    this.y = y;
+    this.length = length;
   }
 }
