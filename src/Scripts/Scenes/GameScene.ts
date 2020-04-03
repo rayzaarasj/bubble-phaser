@@ -25,6 +25,10 @@ export class GameScene extends Phaser.Scene {
   scoreText: Phaser.GameObjects.Text;
   scoreArea: Phaser.GameObjects.Rectangle;
   arrow: Phaser.GameObjects.Image;
+  graphics: Phaser.GameObjects.Graphics;
+  solidLine: Phaser.Geom.Line;
+  dotLine: Phaser.Geom.Line;
+  dotLineReflected: Phaser.Geom.Line;
 
   constructor() {
     super({
@@ -91,11 +95,13 @@ export class GameScene extends Phaser.Scene {
         .image(this.activeBubble.x, this.activeBubble.y, "arrow")
         .setTint(0xff0000);
       this.arrow.setRotation(this.getAngleEventToActiveBubble(event));
+      this.updateGuideLine(event);
     });
 
     this.clickArea.on("pointermove", (event: any) => {
       if (this.dragging) {
         this.arrow.setRotation(this.getAngleEventToActiveBubble(event));
+        this.updateGuideLine(event);
       }
     });
 
@@ -104,6 +110,8 @@ export class GameScene extends Phaser.Scene {
         return;
       }
 
+      this.arrow.destroy();
+      this.graphics.clear();
       var bubbleV = new Phaser.Math.Vector2(
         this.activeBubble.x,
         this.activeBubble.y
@@ -116,6 +124,7 @@ export class GameScene extends Phaser.Scene {
         this.activeBubble.body.velocity
       );
     });
+
     this.scoreText = this.add
       .text(360, 50, "" + this.score, {
         fontFamily: "Roboto Condensed",
@@ -123,6 +132,25 @@ export class GameScene extends Phaser.Scene {
         fontSize: "64px"
       })
       .setOrigin(0.5);
+
+    this.graphics = this.add.graphics({
+      lineStyle: { width: 8, color: 0xff0000 }
+    });
+    this.solidLine = new Phaser.Geom.Line(0, 0, 0, 0);
+    this.dotLine = new Phaser.Geom.Line(0, 0, 0, 0);
+    this.dotLineReflected = new Phaser.Geom.Line(0, 0, 0, 0);
+  }
+
+  updateGuideLine(event: any) {
+    this.solidLine.setTo(
+      this.activeBubble.x,
+      this.activeBubble.y,
+      event.x,
+      event.y
+    );
+
+    this.graphics.clear();
+    this.graphics.strokeLineShape(this.solidLine);
   }
 
   private getAngleEventToActiveBubble(event: any): number {
