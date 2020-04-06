@@ -6,7 +6,7 @@ export class GameOverPanel extends Phaser.GameObjects.Image {
     this.scene.add.existing(this);
 
     this.scene.add
-      .text(360, 500, "Game Over", {
+      .text(360, 500, config.text, {
         fontFamily: "Roboto Condensed",
         color: "#fff",
         fontSize: "64px"

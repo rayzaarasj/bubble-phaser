@@ -96,7 +96,6 @@ export class GameScene extends Phaser.Scene {
         this.activeBubble == null ||
         this.activeBubble.body.velocity.length() != 0
       ) {
-        console.log("ASDAD");
         return;
       }
 
@@ -175,6 +174,10 @@ export class GameScene extends Phaser.Scene {
       this.fallTimer == null
     ) {
       this.setupNewBubble();
+    }
+
+    if (this.bubbles.getLength() <= 1) {
+      this.gameOver("You Win");
     }
   }
 
@@ -420,7 +423,7 @@ export class GameScene extends Phaser.Scene {
     this.activeBubble.setVelocity(0, 0);
 
     if (index.y >= this.maxRow) {
-      this.gameOver();
+      this.gameOver("Game Over");
       return;
     }
 
@@ -440,9 +443,9 @@ export class GameScene extends Phaser.Scene {
     });
   }
 
-  gameOver() {
+  private gameOver(text: string): void {
     this.clickArea.removeInteractive();
-    new GameOverPanel({ scene: this, x: 360, y: 600 });
+    new GameOverPanel({ scene: this, x: 360, y: 600, text: text });
   }
 
   private fallClusters(clusters: Bubble[][]): void {
