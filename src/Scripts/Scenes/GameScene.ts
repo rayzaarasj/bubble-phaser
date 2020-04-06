@@ -92,7 +92,11 @@ export class GameScene extends Phaser.Scene {
     this.setupNewBubble();
 
     this.clickArea.setInteractive().on("pointerdown", (event: any) => {
-      if (this.activeBubble == null) {
+      if (
+        this.activeBubble == null ||
+        this.activeBubble.body.velocity.length() != 0
+      ) {
+        console.log("ASDAD");
         return;
       }
 
@@ -116,6 +120,7 @@ export class GameScene extends Phaser.Scene {
         return;
       }
 
+      this.dragging = false;
       this.arrow.destroy();
       this.graphics.clear();
       var bubbleV = new Phaser.Math.Vector2(
@@ -129,6 +134,16 @@ export class GameScene extends Phaser.Scene {
         this.bubbleSpeed,
         this.activeBubble.body.velocity
       );
+    });
+
+    this.clickArea.on("pointerout", (event: any) => {
+      if (!this.dragging) {
+        return;
+      }
+
+      this.dragging = false;
+      this.arrow.destroy();
+      this.graphics.clear();
     });
 
     this.scoreText = this.add
@@ -149,6 +164,18 @@ export class GameScene extends Phaser.Scene {
     this.solidLine = new Phaser.Geom.Line(0, 0, 0, 0);
     this.dotLine = new Phaser.Geom.Line(0, 0, 0, 0);
     this.dotLineReflected = new Phaser.Geom.Line(0, 0, 0, 0);
+  }
+
+  update(time: any): void {
+    this.scoreText.setText("" + this.score).setX(360);
+
+    if (
+      this.activeBubble == null &&
+      this.popTimer == null &&
+      this.fallTimer == null
+    ) {
+      this.setupNewBubble();
+    }
   }
 
   private updateGuideLine(event: any) {
@@ -282,18 +309,6 @@ export class GameScene extends Phaser.Scene {
       ) +
       90 * Phaser.Math.DEG_TO_RAD
     );
-  }
-
-  update(time: any): void {
-    this.scoreText.setText("" + this.score).setX(360);
-
-    if (
-      this.activeBubble == null &&
-      this.popTimer == null &&
-      this.fallTimer == null
-    ) {
-      this.setupNewBubble();
-    }
   }
 
   private findFloatingClusters(): Bubble[][] {
