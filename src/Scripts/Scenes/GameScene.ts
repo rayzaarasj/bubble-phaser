@@ -33,6 +33,7 @@ export class GameScene extends Phaser.Scene {
   wallLineRight: Phaser.Geom.Line;
   points: Phaser.Geom.Point[];
   maxReflection: number;
+  ceiling: Phaser.Geom.Line;
 
   constructor() {
     super({
@@ -158,8 +159,9 @@ export class GameScene extends Phaser.Scene {
       fillStyle: { color: 0xff0000 }
     });
 
-    this.wallLineLeft = new Phaser.Geom.Line(0, 0, 0, 1200);
-    this.wallLineRight = new Phaser.Geom.Line(720, 0, 720, 1200);
+    this.wallLineLeft = new Phaser.Geom.Line(0, -10000000, 0, 10000000);
+    this.wallLineRight = new Phaser.Geom.Line(720, -10000000, 720, 10000000);
+    this.ceiling = new Phaser.Geom.Line(-10000000, 100, 10000000, 100);
     this.solidLine = new Phaser.Geom.Line(0, 0, 0, 0);
     this.dotLine = new Phaser.Geom.Line(0, 0, 0, 0);
     this.dotLineReflected = new Phaser.Geom.Line(0, 0, 0, 0);
@@ -205,7 +207,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   private dottedGuideLine(x: number, y: number, angle: number, n: number) {
-    if (n > this.maxReflection) {
+    if (n > this.maxReflection || y < 100) {
       return;
     }
     Phaser.Geom.Line.SetToAngle(this.dotLine, x, y, angle, 100000);
@@ -213,13 +215,22 @@ export class GameScene extends Phaser.Scene {
     var wallIntersectResult = this.getClosestIntersectWall();
     var wallIntersect = wallIntersectResult.intersection;
     var bubbleIntersect = this.getClosestIntersectBubble();
+    var ceilingIntersect = this.getCeilingIntersect();
 
-    var length = Math.min(wallIntersect.length, bubbleIntersect.length);
+    var length = Math.min(
+      wallIntersect.length,
+      bubbleIntersect.length,
+      ceilingIntersect.length
+    );
 
     Phaser.Geom.Line.SetToAngle(this.dotLine, x, y, angle, length);
     this.drawDottedLine();
 
-    if (wallIntersect.length < bubbleIntersect.length) {
+    if (
+      wallIntersectResult.wallSide != null &&
+      wallIntersect.length < bubbleIntersect.length &&
+      wallIntersect.length < ceilingIntersect.length
+    ) {
       this.dottedGuideLine(
         wallIntersect.x,
         wallIntersect.y,
@@ -230,6 +241,21 @@ export class GameScene extends Phaser.Scene {
         n + 1
       );
     }
+  }
+
+  private getCeilingIntersect() {
+    var point = new Phaser.Geom.Point();
+    Phaser.Geom.Intersects.LineToLine(this.dotLine, this.ceiling, point);
+    return new Intersection(
+      point.x,
+      point.y,
+      Phaser.Math.Distance.Between(
+        this.dotLine.x1,
+        this.dotLine.y1,
+        point.x,
+        point.y
+      )
+    );
   }
 
   private getClosestIntersectBubble() {
