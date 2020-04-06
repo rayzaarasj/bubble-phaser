@@ -532,6 +532,11 @@ export class GameScene extends Phaser.Scene {
       xoffset = this.tileWidth / 2;
     }
     var gridx = Math.floor((x - xoffset) / this.tileWidth);
+
+    // Workaround. For 7 bubble on odd row.
+    if (gridy % 2 && gridx == 7) {
+      gridx = 6;
+    }
     return new Point(gridx, gridy);
   }
 
