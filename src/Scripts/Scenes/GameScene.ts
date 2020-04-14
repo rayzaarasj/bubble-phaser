@@ -37,7 +37,7 @@ export class GameScene extends Phaser.Scene {
 
   constructor() {
     super({
-      key: "GameScene"
+      key: "GameScene",
     });
   }
 
@@ -49,7 +49,7 @@ export class GameScene extends Phaser.Scene {
       blue: 0x0000ff,
       yellow: 0xffff00,
       purple: 0xff00ff,
-      white: 0xffffff
+      white: 0xffffff,
     };
     this.columns = 8;
     this.startRow = 5;
@@ -69,7 +69,7 @@ export class GameScene extends Phaser.Scene {
         [-1, 1],
         [-1, 0],
         [-1, -1],
-        [0, -1]
+        [0, -1],
       ], // even
       [
         [1, 0],
@@ -77,8 +77,8 @@ export class GameScene extends Phaser.Scene {
         [0, 1],
         [-1, 0],
         [0, -1],
-        [1, -1]
-      ] // odd
+        [1, -1],
+      ], // odd
     ];
   }
 
@@ -150,13 +150,13 @@ export class GameScene extends Phaser.Scene {
       .text(360, 50, "" + this.score, {
         fontFamily: "Roboto Condensed",
         color: "#fff",
-        fontSize: "64px"
+        fontSize: "64px",
       })
       .setOrigin(0.5);
 
     this.graphics = this.add.graphics({
       lineStyle: { width: 8, color: 0xff0000 },
-      fillStyle: { color: 0xff0000 }
+      fillStyle: { color: 0xff0000 },
     });
 
     this.wallLineLeft = new Phaser.Geom.Line(0, -10000000, 0, 10000000);
@@ -200,7 +200,7 @@ export class GameScene extends Phaser.Scene {
 
     this.graphics.clear();
     this.graphics.strokeLineShape(this.solidLine);
-    this.points.forEach(point => {
+    this.points.forEach((point) => {
       this.graphics.fillPoint(point.x, point.y, 10);
     });
     this.points = new Array();
@@ -273,7 +273,7 @@ export class GameScene extends Phaser.Scene {
             points
           )
         ) {
-          points.forEach(temp => {
+          points.forEach((temp) => {
             var tempLength = Phaser.Math.Distance.Between(
               this.dotLine.x1,
               this.dotLine.y1,
@@ -324,7 +324,7 @@ export class GameScene extends Phaser.Scene {
           point.y
         )
       ),
-      wallSide: wallSide
+      wallSide: wallSide,
     };
   }
 
@@ -465,7 +465,7 @@ export class GameScene extends Phaser.Scene {
           this.activeBubble = null;
         }
       },
-      callbackScope: this
+      callbackScope: this,
     });
   }
 
@@ -476,8 +476,8 @@ export class GameScene extends Phaser.Scene {
 
   private fallClusters(clusters: Bubble[][]): void {
     var finalCluster = [];
-    clusters.forEach(cluster => {
-      cluster.forEach(tile => {
+    clusters.forEach((cluster) => {
+      cluster.forEach((tile) => {
         finalCluster.push(tile);
       });
     });
@@ -497,7 +497,7 @@ export class GameScene extends Phaser.Scene {
         bubble.fall();
       },
       callbackScope: this,
-      repeat: -1
+      repeat: -1,
     });
   }
 
@@ -522,7 +522,7 @@ export class GameScene extends Phaser.Scene {
         bubble.pop();
       },
       callbackScope: this,
-      repeat: -1
+      repeat: -1,
     });
   }
 
@@ -537,7 +537,13 @@ export class GameScene extends Phaser.Scene {
       this.bubbles,
       () => {
         this.physics.world.removeCollider(this.bubbleToCluster);
-        this.snapBubble();
+        this.time.addEvent({
+          delay: 10,
+          callbackScope: this,
+          callback: () => {
+            this.snapBubble();
+          },
+        });
         this.popSound.play();
       },
       null,
@@ -560,7 +566,7 @@ export class GameScene extends Phaser.Scene {
     if (gridy % 2) {
       xoffset = this.tileWidth / 2;
     }
-    var gridx = Math.floor((x - xoffset) / this.tileWidth);
+    var gridx = Math.max(0, Math.floor((x - xoffset) / this.tileWidth));
 
     // Workaround. For 7 bubble on odd row.
     if (gridy % 2 && gridx == 7) {

@@ -9,7 +9,7 @@ export class GameOverPanel extends Phaser.GameObjects.Image {
       .text(360, 500, config.text, {
         fontFamily: "Roboto Condensed",
         color: "#fff",
-        fontSize: "64px"
+        fontSize: "64px",
       })
       .setOrigin(0.5, 0.5)
       .setX(360);

@@ -12,16 +12,16 @@ const config: Phaser.Types.Core.GameConfig = {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
     width: DEFAULT_WIDTH,
-    height: DEFAULT_HEIGHT
+    height: DEFAULT_HEIGHT,
   },
   physics: {
     default: "arcade",
     arcade: {
-      debug: false
-    }
+      debug: false,
+    },
   },
   backgroundColor: "#c0c0c0",
-  scene: [PreLoadScene, GameScene]
+  scene: [PreLoadScene, GameScene],
 };
 
 export class BubbleGame extends Phaser.Game {

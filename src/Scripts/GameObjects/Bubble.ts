@@ -25,7 +25,7 @@ export class Bubble extends Phaser.Physics.Arcade.Sprite {
     this.scene.anims.create({
       key: "pop",
       frames: this.scene.anims.generateFrameNumbers("bubble", {}),
-      repeat: 0
+      repeat: 0,
     });
 
     this.circle = new Phaser.Geom.Circle(this.x, this.y, 45);
@@ -48,7 +48,7 @@ export class Bubble extends Phaser.Physics.Arcade.Sprite {
       callback: () => {
         this.destroy();
       },
-      callbackScope: this
+      callbackScope: this,
     });
   }
 
@@ -62,7 +62,7 @@ export class Bubble extends Phaser.Physics.Arcade.Sprite {
       callback: () => {
         this.destroy();
       },
-      callbackScope: this
+      callbackScope: this,
     });
   }
 }
