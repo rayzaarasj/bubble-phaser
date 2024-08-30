@@ -2,6 +2,7 @@ import "phaser";
 import { Bubble } from "../GameObjects/Bubble";
 import { GameOverPanel } from "../GameObjects/GameOverPanel";
 
+// TEST
 export class GameScene extends Phaser.Scene {
   colors: Object;
   columns: integer;
